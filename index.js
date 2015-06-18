@@ -28,18 +28,6 @@ dbs.models.User = User;
 
 //sqlized.sync().then(syncSuccess, syncError);
 
-/*
-all_users = User.findAll();
-console.log("All users:");
-console.log(all_users);
-*/
-
-sqlized.query("SELECT * FROM `users`", { model: dbs.models.User, type: sqlized.QueryTypes.SELECT})
-.then(function(users) {
-  // We don't need spread here, since only the results will be returned for select queries
-	console.log(users);
-})
-
 function syncSuccess() {
 	console.log('Succesfully synced users DB!');
 }
