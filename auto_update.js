@@ -2,7 +2,7 @@
         pathToJson: '',
         async: true,
         silent: false,
-        autoupdate: false,
+        autoupdate: true,
         check_git: true
     });
  

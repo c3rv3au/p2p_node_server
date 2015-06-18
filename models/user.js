@@ -6,7 +6,6 @@ module.exports = function(sequelize, DataTypes) {
 	      autoIncrement: true
 	    },
 	    username: { type: DataTypes.STRING, unique: true },
-	    //username: DataTypes.STRING,
 	    password: DataTypes.STRING,
 	    is_admin: DataTypes.BOOLEAN
 	});

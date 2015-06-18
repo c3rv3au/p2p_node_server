@@ -1,3 +1,5 @@
+var peer_updater = require("./auto_update.js");
+
 var numCPUs = require('os').cpus().length;
 
 var Database_manager = require("./classes/databases_manager.js");
@@ -40,14 +42,6 @@ sqlized.query("SELECT * FROM `users`", { model: dbs.models.User, type: sqlized.Q
 
 function syncSuccess() {
 	console.log('Succesfully synced users DB!');
-	
-	var md5 = require('MD5')
-	var me = User.create({
-		username: 'egrenier',
-	    password: md5('quebecli'),
-	    is_admin: true
-	});
-	console.log(me);
 }
 
 function syncError(ex) {
