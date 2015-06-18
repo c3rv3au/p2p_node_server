@@ -1,8 +1,9 @@
-// Il faut que tout puisse être local et aussi à distance. Donc quand c'est à distance, l'API appel
-// l'autre serveur pour recevoir les données. Et quand c'est local, tout est executer en local
+// We need to be able to use a local database or a remote one. It need to be automated, we don't want
+// to take care about that in the rest of codes.
 
 function Database_manager() {
 	this.databases = [];
+	this.models = {};
 }
 
 Database_manager.prototype.add_database = function(name,database) {

@@ -1,1 +1,1 @@
-// L'idee c'est d'avoir un point d'entrer pour tout un cluster de memcache
+// L'idee c'est d'avoir un point d'entrer (ENDPOINT) pour tout un cluster de memcache

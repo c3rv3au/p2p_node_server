@@ -5,7 +5,8 @@ module.exports = function(sequelize, DataTypes) {
 	      primaryKey: true,
 	      autoIncrement: true
 	    },
-	    username: DataTypes.STRING,
+	    username: { type: DataTypes.STRING, unique: true },
+	    //username: DataTypes.STRING,
 	    password: DataTypes.STRING,
 	    is_admin: DataTypes.BOOLEAN
 	});

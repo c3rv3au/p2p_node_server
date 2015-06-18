@@ -1,3 +1,5 @@
+var numCPUs = require('os').cpus().length;
+
 var Database_manager = require("./classes/databases_manager.js");
 //console.log(Database_manager);
 var dbs = new Database_manager();
@@ -8,6 +10,49 @@ var sm = new Service_manager();
 sm.set_db_manager(dbs);
 console.log(sm);
 sm.start();
+
+function get_user_db() {
+	return {
+	    storage: __dirname + '/datas/users.sqlite',
+	    dialect: 'sqlite'  
+	};
+}
+
+var Sequelize = require('sequelize');
+var sqlized = new Sequelize(null,null,null,get_user_db());
+
+var User = sqlized.import(__dirname + '/models/user.js')
+dbs.models.User = User;
+
+//sqlized.sync().then(syncSuccess, syncError);
+
+/*
+all_users = User.findAll();
+console.log("All users:");
+console.log(all_users);
+*/
+
+sqlized.query("SELECT * FROM `users`", { model: dbs.models.User, type: sqlized.QueryTypes.SELECT})
+.then(function(users) {
+  // We don't need spread here, since only the results will be returned for select queries
+	console.log(users);
+})
+
+function syncSuccess() {
+	console.log('Succesfully synced users DB!');
+	
+	var md5 = require('MD5')
+	var me = User.create({
+		username: 'egrenier',
+	    password: md5('quebecli'),
+	    is_admin: true
+	});
+	console.log(me);
+}
+
+function syncError(ex) {
+    console.log('Error while executing users DB sync: '+ ex.message, 'error');
+}
 
 /*
 setTimeout(function () {
