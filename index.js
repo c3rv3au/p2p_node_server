@@ -2,16 +2,21 @@ var peer_updater = require("./auto_update.js");
 
 var numCPUs = require('os').cpus().length;
 
+// TODO - Check if the first time we run it on this host. If yes, he should get a peer ID from API peer master.
+
 var Database_manager = require("./classes/databases_manager.js");
-//console.log(Database_manager);
 var dbs = new Database_manager();
-//console.log(dbs);
 
 var Service_manager = require("./classes/services_manager.js");
 var sm = new Service_manager();
 sm.set_db_manager(dbs);
 console.log(sm);
 sm.start();
+
+/*
+var Peers_manager = require("./services/peers_manager.js");
+var pm = new Peers_manager();
+*/
 
 function get_user_db() {
 	return {
@@ -21,20 +26,24 @@ function get_user_db() {
 }
 
 var Sequelize = require('sequelize');
-var sqlized = new Sequelize(null,null,null,get_user_db());
+var auth_db = new Sequelize(null,null,null,get_user_db());
 
-var User = sqlized.import(__dirname + '/models/user.js')
+var User = auth_db.import(__dirname + '/models/user.js')
 dbs.models.User = User;
 
-//sqlized.sync().then(syncSuccess, syncError);
+dbs.add_database("auth_db",auth_db);
 
-function syncSuccess() {
-	console.log('Succesfully synced users DB!');
-}
-
-function syncError(ex) {
-    console.log('Error while executing users DB sync: '+ ex.message, 'error');
-}
+var fs = require('fs'); 
+fs.exists('conf/peer.json', function(exists) { 
+  if (!exists) { 
+      // It not exist, this is the first run
+	  var Setup = require("./setup.js");
+	  console.log(Setup);
+	  console.log("passe");
+	  var setup = new Setup(dbs);
+	  setup.run();
+  } 
+}); 
 
 /*
 setTimeout(function () {

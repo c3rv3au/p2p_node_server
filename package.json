@@ -1,6 +1,6 @@
 {
-  "name": "P2PnodeServer",
-  "version": "0.0.2",
+  "name": "p2p_node_server",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {

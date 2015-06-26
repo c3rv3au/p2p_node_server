@@ -24,10 +24,11 @@ function Load_balancer() {
 Load_balancer.prototype.api_add_peer = function (webrequest, callback) {
 	console.log("Inside Load_balancer.add_node of balancer id " + this.service_id);
 	
-	if (webrequest.query.peer_id.length > 0) {
-		console.log("Peer to add : " + webrequest.query.peer_id);
-	    webrequest.res.write(JSON.stringify({ success: true }));
-	}
+	if (typeof webrequest.query.peer_id !== 'undefined')
+		if (webrequest.query.peer_id.length > 0) {
+			console.log("Peer to add : " + webrequest.query.peer_id);
+			webrequest.res.write(JSON.stringify({ success: true }));
+		}
 	
 	if (typeof callback !== 'undefined')
 	  return callback();

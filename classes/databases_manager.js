@@ -20,7 +20,4 @@ Database_manager.prototype.get_database = function(name) {
 	return found;
 }
 
-//exports.add_database = add_database;
-//exports.get_database = get_database;
-
 module.exports = Database_manager;

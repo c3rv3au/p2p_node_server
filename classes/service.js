@@ -1,5 +1,4 @@
-// Service parent class. Should never be used directly. It do nothing. 
-//exports.done = false;
+// Service parent class. Should never be used directly. It do nothing.
 
 var fs = require("fs");
 
@@ -9,9 +8,9 @@ function Service() {
 	this.config = {};
 	this.running = false;
 	this.service_id = null;
+	this.uniqueness = false;
 	this.auto_start = true;
 	this.routes = {}; // Webserver routes
-	//console.log("Service class initialised...");
 }
 
 // class methods
@@ -38,9 +37,8 @@ Service.prototype.load = function(_id, callback) {
 			  fs.readFile(filename, function(err,datas) {
 				 console.log(datas + " found in conf file");
 				 self.config = JSON.parse(datas);
-				 console.log(self.config);
-				 
-				 console.log(self.auto_start);
+				 console.log(self.config);				 
+				 console.log("Is auto start: " + self.auto_start);
 				 if (self.auto_start) {
 	 			    console.log("Auto Start");
 				    self.start(function () {		
@@ -51,7 +49,14 @@ Service.prototype.load = function(_id, callback) {
 				 return callback();
 			  });
 		  } else {
-			  return callback();
+			  if (self.auto_start) {
+	 			console.log("No config file. Auto Starting..");
+				self.start(function () {
+					return callback();
+				});
+			  } else {
+				  return callback();
+			  }
 		  }
     });
 }

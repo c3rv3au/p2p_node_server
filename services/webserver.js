@@ -1,4 +1,4 @@
-// Webserver 
+// Webserver
 
 var Service = require('../classes/service.js');
 var Webrequest = require('../classes/webrequest.js');
@@ -34,7 +34,7 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 	var url_parts = url.parse(req.url);
 
 	this.routes.forEach(function (route) {
-		if (!route_found) {			
+		if (!route_found) {
 			var pls_continue = false;
 			if (route.domain == '*')
 				pls_continue = true;
@@ -55,9 +55,6 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 							self.send_403(req,res);
 							return callback();
 						}
-						
-						/*
-						*/
 					} else {
 						route.run_function(the_webrequest, function() {
 							return callback();
@@ -70,10 +67,9 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 	
 	if (!route_found) {
 		this.send_404_not_found(req,res);
+		res.end();
 		return callback();
-	}
-
-	res.end();
+	}	
 }
 
 Webserver.prototype.start = function(callback) {

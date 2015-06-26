@@ -30,7 +30,6 @@ ServiceManager.prototype.get_service = function (service_id) {
 
 ServiceManager.prototype.start = function () {
 	var self = this;
-	console.log(self);
 	
 	// Lance le webserver pour les routes et aussi les APIs
 	self.webserver = new Webserver();
@@ -40,8 +39,10 @@ ServiceManager.prototype.start = function () {
 	
 	// Startup script
 	service_manager_db = new neDatastore({ filename: 'datas/services_manager', autoload: true });
+	this.service_manager_db = service_manager_db;
 	service_manager_db.loadDatabase(function (err) {
-		self.database_manager.add_database("services_db",service_manager_db);
+		if (self.database_manager !== null)
+			self.database_manager.add_database("services_db",service_manager_db);
 		if (err) {
 			console.log("Error loading services_manager");
 			return;
@@ -64,10 +65,12 @@ ServiceManager.prototype.start = function () {
 				var newService = require("../services/" + service_to_load.service_name + ".js");
 				var the_newService = new newService();
 				the_newService.load(service_to_load._id, function() {
+					console.log("Service loaded");
 					self.services_loaded.push(the_newService);
-					if (the_newService.running) {
+					console.log("Service running? " + the_newService.running);
+					if (the_newService.running) {						
 						the_newService.routes.forEach(function (route) {
-							//console.log("Found a route to add");
+							console.log("Found a route to add");
 							self.webserver.addroute(route);
 						});
 					}
