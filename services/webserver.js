@@ -66,8 +66,7 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 	});
 	
 	if (!route_found) {
-		this.send_404_not_found(req,res);
-		res.end();
+		this.send_404_not_found(req,res);		
 		return callback();
 	}	
 }
