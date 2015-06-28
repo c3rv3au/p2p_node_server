@@ -35,6 +35,14 @@ function Peers_Manager() {
 	//dbs.add_database("peer_db",peer_db);
 }
 
+Peers_Manager.prototype.api_show_peers = function (webrequest, callback) {	
+	this.Peer.findAll({}).then(function(results) {
+		console.log(results);
+		webrequest.res.write(JSON.stringify({ success: true, datas: results }));
+		webrequest.res.end();
+	});
+}
+
 Peers_Manager.prototype.api_create_peer = function (webrequest, callback) {
 	//console.log(this);
 	console.log("Inside Peers_Manager.create_peer " + this.service_id);
@@ -77,8 +85,10 @@ Peers_Manager.prototype.start = function(callback) {
 	var self = this;
 	
 	// Les routes sont copiées à partir du WebServer
-	route1 = new Route("*","GET","/api/peer/create_peer", function (webrequest) { self.api_create_peer(webrequest); });		
-	this.routes = [route1];
+	route1 = new Route("*","GET","/api/peer/create_peer", function (webrequest) { self.api_create_peer(webrequest); });			
+	route2 = new Route("*","GET","/api/peer/list", function (webrequest) { self.api_show_peers(webrequest); });		
+
+	this.routes = [route1, route2];
 
 	self.running = true;
 
