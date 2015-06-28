@@ -1,7 +1,7 @@
 {
   "name": "p2p_node_server",
-  "version": "0.0.4",
-  "description": "",
+  "version": "0.0.5",
+  "description": "The first real P2P server with auto-scaling, using other PCs ressources, parallelizing and more.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

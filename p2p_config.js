@@ -1,1 +1,1 @@
-module.exports.peer_api_url = '127.0.0.1';
+module.exports.peer_api_url = '92.222.88.67';
