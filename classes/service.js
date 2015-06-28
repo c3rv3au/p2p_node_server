@@ -84,5 +84,9 @@ Service.prototype.save_service_config = function(json_str, callback) {
 	}); 
 }
 
+Service.prototype.verification = function(callback) {
+	// Verification is called often to verify if everything is going well (scaling, backup, etc).
+}
+
 // export the class
 module.exports = Service;

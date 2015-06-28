@@ -22,7 +22,13 @@ Setup.prototype.create_peer_conf = function (callback) {
 	request('http://' + config.peer_api_url + '/api/peer/create_peer', function (error, response, body) {
 	  if (!error && response.statusCode == 200) {
 	    console.log("RESPONSE " + body);
-		var peer_id = 7;
+	    try {
+	        var parsed = JSON.parse(body);
+	        var peer_id = parsed.id
+	    } catch (ex) {
+	    	// Create an error here
+	    	  return callback(err);
+	    }
 
 		var conf = { peer_id: peer_id }
 		var line = JSON.stringify(conf);
@@ -39,7 +45,7 @@ Setup.prototype.create_peer_conf = function (callback) {
 		  console.log("Error in getting a peer ID");
 	  }
 	})
-	}
+}
 
 Setup.prototype.syncError = function(ex) {
     console.log('Error while executing users DB sync: '+ ex.message, 'error');

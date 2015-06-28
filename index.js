@@ -33,6 +33,7 @@ dbs.models.User = User;
 
 dbs.add_database("auth_db",auth_db);
 
+// Setup the node for the first time?
 var fs = require('fs'); 
 fs.exists('conf/peer.json', function(exists) { 
   if (!exists) { 
