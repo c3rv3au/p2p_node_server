@@ -8,12 +8,22 @@ function Service() {
 	this.config = {};
 	this.running = false;
 	this.service_id = null;
+	this.one_per_peer = false;
 	this.uniqueness = false;
 	this.auto_start = true;
 	this.routes = {}; // Webserver routes
 }
 
-// class methods
+//class methods
+Service.prototype.resstart = function(callback) {
+	var self = this;
+	this.stop(function () {
+		self.start(function() {
+			return callback(0);			
+		});
+	});	
+};
+
 Service.prototype.start = function(callback) {
 	this.running = true;
 	console.log("Started service: " + this.service_id);

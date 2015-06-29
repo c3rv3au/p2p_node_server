@@ -35,7 +35,8 @@ function Peers_Manager() {
 	//dbs.add_database("peer_db",peer_db);
 }
 
-Peers_Manager.prototype.api_show_peers = function (webrequest, callback) {	
+Peers_Manager.prototype.api_show_peers = function (webrequest, callback) {
+	// todo : Protect the list, must be authenticated and have permission
 	this.Peer.findAll({}).then(function(results) {
 		console.log(results);
 		webrequest.res.write(JSON.stringify({ success: true, datas: results }));
@@ -43,8 +44,21 @@ Peers_Manager.prototype.api_show_peers = function (webrequest, callback) {
 	});
 }
 
+Peers_Manager.prototype.api_get_peer = function (webrequest, callback) {
+	// todo : Protect the list, must be authenticated and have permission
+	//console.log(webrequest.re)
+	this.Peer.findOne({where: {id: webrequest.query.peer_id}}).then(function(results) {
+		//console.log(results);
+		if (results !== null) {
+			webrequest.res.write(JSON.stringify({ success: true, peer: results }));
+		} else {
+			webrequest.res.write(JSON.stringify({ success: false }));
+		}		
+		webrequest.res.end();
+	});
+}
+
 Peers_Manager.prototype.api_create_peer = function (webrequest, callback) {
-	//console.log(this);
 	console.log("Inside Peers_Manager.create_peer " + this.service_id);
 
 	// TODO - Add a limit of 1 per IP per minute.
@@ -86,9 +100,10 @@ Peers_Manager.prototype.start = function(callback) {
 	
 	// Les routes sont copiées à partir du WebServer
 	route1 = new Route("*","GET","/api/peer/create_peer", function (webrequest) { self.api_create_peer(webrequest); });			
-	route2 = new Route("*","GET","/api/peer/list", function (webrequest) { self.api_show_peers(webrequest); });		
+	route2 = new Route("*","GET","/api/peer/list", function (webrequest) { self.api_show_peers(webrequest); });
+	route3 = new Route("*","GET","/api/peer/get", function (webrequest) { self.api_get_peer(webrequest); });
 
-	this.routes = [route1, route2];
+	this.routes = [route1, route2, route3];
 
 	self.running = true;
 

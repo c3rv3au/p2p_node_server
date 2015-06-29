@@ -24,6 +24,8 @@ Peer.prototype.load = function(_id, callback) {
 				 return callback();
 			  });
 		  } else {
+			  // TODO : The peer ID don't exist in local, we should lookup on the Peers Server
+			  
 			  return callback();
 		  }
     });

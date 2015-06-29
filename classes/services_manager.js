@@ -2,6 +2,7 @@
 var neDatastore = require('nedb');
 var events = require('events');
 var Webserver = require('../services/webserver.js');
+var Route = require('../classes/route.js');
 
 function ServiceManager() {	
 	this.loaded_services_counter = 0;
@@ -13,6 +14,24 @@ function ServiceManager() {
 
 ServiceManager.prototype.set_db_manager = function (db_manager) {
 	this.database_manager = db_manager;
+}
+
+ServiceManager.prototype.api_add_service = function(webrequest) {
+	if (typeof webrequest.query.name !== 'undefined') {
+		var self = this;
+		service_name = webrequest.query.name;
+		var doc = { service_name: service_name };
+		service_manager_db.insert(doc, function (err, newDoc) {   // Callback is optional
+			console.log("Service " + newDoc._id + " added");
+			self.load_service(doc, function () {
+			});
+			webrequest.res.write(JSON.stringify({ success: true, id: doc._id }));
+			webrequest.res.end();
+		});
+	} else {
+		webrequest.res.write(JSON.stringify({ success: false }));
+		webrequest.res.end();
+	}
 }
 
 ServiceManager.prototype.get_service = function (service_id) {
@@ -28,14 +47,46 @@ ServiceManager.prototype.get_service = function (service_id) {
 	return retour;
 }
 
+ServiceManager.prototype.load_service = function (service_to_load) {
+	var self = this;
+	console.log("Load service : " + service_to_load.service_name);
+	var newService = require("../services/" + service_to_load.service_name + ".js");
+	var the_newService = new newService();
+	the_newService.load(service_to_load._id, function() {
+		console.log("Service loaded");
+		self.services_loaded.push(the_newService);
+		console.log("Service running? " + the_newService.running);
+		if (the_newService.running) {						
+			the_newService.routes.forEach(function (route) {
+				console.log("Found a route to add");
+				self.webserver.addroute(route);
+			});
+		}
+	});
+}
+
 ServiceManager.prototype.start = function () {
 	var self = this;
 	
+	route1 = new Route("*","GET","/api/services/add", function (webrequest) { 
+		console.log("Add Service");
+		self.api_add_service(webrequest, function () {
+		});
+	});
+	route2 = new Route("*","GET","/api/services/list", function (webrequest) { 
+		console.log("List Service");
+	});
+
+	this.routes = [route1, route2];
+
 	// Lance le webserver pour les routes et aussi les APIs
 	self.webserver = new Webserver();
 	this.webserver.config.port = 80;
 	this.services_loaded.push(this.webserver);
 	this.webserver.start(function() {});
+	
+	this.webserver.addroute(route1);
+	this.webserver.addroute(route2);
 	
 	// Startup script
 	service_manager_db = new neDatastore({ filename: 'datas/services_manager', autoload: true });
@@ -60,22 +111,10 @@ ServiceManager.prototype.start = function () {
 		service_manager_db.find({}, function (err, services_to_load) {
 			self.found_services_counter++;
 			console.log(services_to_load);
-			services_to_load.forEach(function(service_to_load) {
-				console.log("Load service : " + service_to_load.service_name);
-				var newService = require("../services/" + service_to_load.service_name + ".js");
-				var the_newService = new newService();
-				the_newService.load(service_to_load._id, function() {
-					console.log("Service loaded");
-					self.services_loaded.push(the_newService);
-					console.log("Service running? " + the_newService.running);
-					if (the_newService.running) {						
-						the_newService.routes.forEach(function (route) {
-							console.log("Found a route to add");
-							self.webserver.addroute(route);
-						});
-					}
+			services_to_load.forEach( function (the_service) {
+				self.load_service(the_service, function () {
+					self.loaded_services_counter++;
 				});
-			    self.loaded_services_counter++;
 			});
 	
 			/*

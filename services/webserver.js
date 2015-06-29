@@ -18,10 +18,33 @@ function Webserver() {
 	this.peers_available = [];
 	this.timer = null;
 	this.routes = [];
+	this.other_routes = [];
+	
+	var self = this;
+	
+	var route1 = new Route("*","GET","/api/webserver/list", function (webrequest) { self.api_list(webrequest); });	
+	//route1.require_auth = true;
+	
+	this.addroute(route1);
+}
+
+Webserver.prototype.api_list = function (webrequest) {
+	var retour = new Array();
+	this.routes.forEach(function (entry) {
+		var the_new = {domain: entry.domain, methode: entry.methode, path: entry.path};
+		retour.push(the_new);
+	});
+	
+	webrequest.res.write(JSON.stringify(retour));
+	webrequest.res.end();
 }
 
 Webserver.prototype.addroute = function (route) {
-	this.routes.push(route);
+	if (route.domain == "*" && route.methode == "*" && route.path == "*") {
+		this.other_routes.push(route);
+	} else {
+		this.routes.push(route);
+	}
 }
 
 Webserver.prototype.webrequest = function(req,res, callback) {
@@ -35,13 +58,14 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 
 	this.routes.forEach(function (route) {
 		if (!route_found) {
+			//console.log("Hostname: " + req.headers['host']);
 			var pls_continue = false;
 			if (route.domain == '*')
 				pls_continue = true;
-			//if (route.domain == req.hostname)
-			//	pls_continue = true;
+			if (route.domain == req.headers['host']) 
+				pls_continue = true;
 			if (pls_continue) {
-				if (url_parts.pathname == route.path) {
+				if (url_parts.pathname == route.path || route.path == '*') {
 					route_found = true;
 					console.log("We found the good route");
 					pls_run = true;
@@ -66,7 +90,15 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 	});
 	
 	if (!route_found) {
-		this.send_404_not_found(req,res);		
+		this.other_routes.forEach(function (route) {
+			route_found = true;
+			route.run_function(the_webrequest, function() {
+				return callback();
+			});
+		});
+		if (!route_found) {
+			this.send_404_not_found(req,res);
+		}
 		return callback();
 	}	
 }

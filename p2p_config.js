@@ -1,1 +1,1 @@
-module.exports.peer_api_url = '92.222.88.67';
+module.exports.peer_api_url = '92.222.88.67'; // Need to be changed to a DNS when our DNS server will be up and running
