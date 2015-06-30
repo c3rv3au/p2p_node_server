@@ -1,6 +1,6 @@
 {
   "name": "p2p_node_server",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "The first real P2P server with auto-scaling, using other PCs ressources, parallelizing and more.",
   "main": "start.js",
   "scripts": {

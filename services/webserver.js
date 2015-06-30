@@ -55,6 +55,8 @@ function get_server_hostname(req) {
 	    hostname = hostname.substring(2);
 	  if (hostname.substring(0, 5)=='serv.')
 	    hostname = hostname.substring(5);
+	  if (hostname.substring(0, 4)=='www.')
+		    hostname = hostname.substring(4);
 	  return hostname;
 	}
 
@@ -68,7 +70,7 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 	var route_found = false;
 	var url_parts = url.parse(req.url);
 	
-	var hostname =get_server_hostname(req);
+	var hostname = get_server_hostname(req);
 
 	this.routes.forEach(function (route) {
 		if (!route_found) {
@@ -77,6 +79,8 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 			if (route.domain == '*')
 				pls_continue = true;
 			if (route.domain == hostname) 
+				pls_continue = true;
+			if (route.domain == req.headers['host']) 
 				pls_continue = true;
 			if (pls_continue) {
 				if (url_parts.pathname == route.path || route.path == '*') {
