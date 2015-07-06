@@ -7,6 +7,19 @@ function Webrequest(req,res) {
 	this.res = res;
 	this.parts = url.parse(this.req.url, true);
 	this.query = this.parts.query;
+	this.cookies = parseCookies(this.req);
+}
+
+function parseCookies (request) {
+    var list = {},
+        rc = request.headers.cookie;
+
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+
+    return list;
 }
 
 // export the class

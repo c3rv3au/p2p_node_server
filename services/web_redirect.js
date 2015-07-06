@@ -33,6 +33,15 @@ Web_redirect.prototype.api_set = function(webrequest) {
 		return;
 	}
 	this.config.url = webrequest.query.url;
+	
+	if (typeof webrequest.query.set_cookie !== 'undefined') {
+		this.config.set_cookie = parseInt(webrequest.query.set_cookie);
+	}
+	
+	if (typeof webrequest.query.alt_url !== 'undefined') {
+		this.config.alt_url = webrequest.query.alt_url;
+	}
+	
 	var self = this;
 	this.save(function () {
 		self.resstart(function () {
@@ -44,7 +53,22 @@ Web_redirect.prototype.api_set = function(webrequest) {
 }
 
 Web_redirect.prototype.show_html = function (webrequest, callback) {
-	res = webrequest.res;
+	var temp_sec = parseInt(Date.now()/1000);
+	var res = webrequest.res;
+	
+	if (typeof this.config.alt_url !== 'undefined' && this.config.set_cookie == 1)
+	  if (typeof webrequest.cookies.last_visit_at !== 'undefined')
+        if (webrequest.cookies.last_visit_at > temp_sec - 120) {
+        	res.writeHead(302, [
+        	           	     ['Location', this.config.alt_url]
+        	]);
+        	res.end();
+        	return callback();
+        }
+
+	res.writeHead(200, [
+	     ['Set-Cookie', 'last_visit_at=' + temp_sec],
+	  ]);	  
 	
 	  res.write("<html><head><title>TouTrix redirect</title>");
 	  res.write("<meta http-equiv=\"refresh\" content=\"1; URL=" + this.config.url + "\">");
