@@ -49,14 +49,16 @@ Webserver.prototype.addroute = function (route) {
 
 function get_server_hostname(req) {
 	  hostname = req.headers['host'];
-	  if (hostname.substring(0, 3)=='js.')
-	    hostname = hostname.substring(3);
-	  if (hostname.substring(0, 2)=='m.')
-	    hostname = hostname.substring(2);
-	  if (hostname.substring(0, 5)=='serv.')
-	    hostname = hostname.substring(5);
-	  if (hostname.substring(0, 4)=='www.')
-		    hostname = hostname.substring(4);
+	  if (typeof hostname !== 'undefined') {
+		  if (hostname.substring(0, 3)=='js.')
+		    hostname = hostname.substring(3);
+		  if (hostname.substring(0, 2)=='m.')
+		    hostname = hostname.substring(2);
+		  if (hostname.substring(0, 5)=='serv.')
+		    hostname = hostname.substring(5);
+		  if (hostname.substring(0, 4)=='www.')
+			    hostname = hostname.substring(4);
+	  }
 	  return hostname;
 	}
 
