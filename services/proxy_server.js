@@ -39,6 +39,8 @@ Proxy_server.prototype.api_set = function(webrequest) {
 
 Proxy_server.prototype.proxy_request = function(req,res,callback) {
 	// TODO : Verify if we have access to this proxy
+	// TODO : Add HTTPS
+	
 	var target = req.url;
 	console.log("Target: " + target);
 	this.proxy.web(req, res, {target: target}, function (e) {
@@ -52,7 +54,6 @@ Proxy_server.prototype.start = function(callback) {
 	var route1 = new Route("*","GET","/api/proxy/" + self.service_id + "/set", function (webrequest) { self.api_set(webrequest); });
 	console.log(route1);
 
-	
 	this.http_server = http.createServer(function(req, res) {		
 		self.proxy_request(req, res, function () {
 		});
