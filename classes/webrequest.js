@@ -16,7 +16,11 @@ function parseCookies (request) {
 
     rc && rc.split(';').forEach(function( cookie ) {
         var parts = cookie.split('=');
-        list[parts.shift().trim()] = decodeURI(parts.join('='));
+        try {
+        	list[parts.shift().trim()] = decodeURI(parts.join('='));
+        } catch (e) {
+            // ignore parse exceptions
+        }
     });
 
     return list;
