@@ -53,6 +53,7 @@ Proxy_server.prototype.start = function(callback) {
 	
 	var route1 = new Route("*","GET","/api/proxy/" + self.service_id + "/set", function (webrequest) { self.api_set(webrequest); });
 	console.log(route1);
+	this.routes = [route1];
 
 	this.http_server = http.createServer(function(req, res) {		
 		self.proxy_request(req, res, function () {
