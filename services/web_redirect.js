@@ -97,7 +97,6 @@ Web_redirect.prototype.start = function(callback) {
 
 	// Routes are copied to the webserver
 	var route1 = new Route("*","GET","/api/web/" + self.service_id + "/set", function (webrequest) { self.api_set(webrequest); });
-	console.log(route1);
 
 	if (typeof this.config.domain_name !== 'undefined') {
 		console.log("Domain_name is defined")

@@ -126,7 +126,7 @@ Webserver.prototype.webrequest = function(req,res, callback) {
 Webserver.prototype.start = function(callback) {
 	var self = this;
 	this.http_server = http.createServer(function(req, res) {		
-		self.webrequest(req, res, function () {			
+		self.webrequest(req, res, function () {			
 		});
 	}).listen(this.config.port);
 	return callback();

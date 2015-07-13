@@ -8,6 +8,19 @@ function Webrequest(req,res) {
 	this.parts = url.parse(this.req.url, true);
 	this.query = this.parts.query;
 	this.cookies = parseCookies(this.req);
+	
+	if (typeof req.headers['x-forwarded-for'] !== 'undefined') {
+	    var pieces = req.headers['x-forwarded-for'].split(/[\s,]+/);
+	    ip = pieces[0];
+	    this.client_ip = ip;
+	  } else if (typeof req.headers['x-forwarded-For'] !== 'undefined') {
+	    var pieces = req.headers['x-forwarded-For'].split(/[\s,]+/);
+	    ip = pieces[0];
+	    this.client_ip = ip;
+	  } else {
+		this.client_ip = req.connection.remoteAddress;
+	}
+	this.userAgent = req.headers['user-agent'];
 }
 
 function parseCookies (request) {
