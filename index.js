@@ -1,17 +1,72 @@
 var peer_updater = require("./auto_update.js");
 
+var cluster = require('cluster');
 var numCPUs = require('os').cpus().length;
 
-// TODO - Check if the first time we run it on this host. If yes, he should get a peer ID from API peer master.
+var workers = [];
 
-var Database_manager = require("./classes/databases_manager.js");
-var dbs = new Database_manager();
+if (cluster.isMaster) {
+	// Setup the node for the first time?
+	var fs = require('fs'); 
+	fs.exists('conf/peer.json', function(exists) { 
+	  if (!exists) { 
+	      // It not exist, this is the first run
+		  var Setup = require("./setup.js");
+		  console.log(Setup);
+		  console.log("passe");
+		  var setup = new Setup(dbs);
+		  setup.run();
+	  } 
+	}); 
 
-var Service_manager = require("./classes/services_manager.js");
-var sm = new Service_manager();
-sm.set_db_manager(dbs);
-console.log(sm);
-sm.start();
+	  var fork_ids = new Array()
+	  // Fork workers.
+	  if (process.env.dev == 1) {
+	    numCPUs = 1;
+	  } else {
+//	    if (numCPUs < 4)
+//	      numCPUs = 4;
+	  }
+	  for (var i = 0; i < numCPUs; i++) {
+	    worker = cluster.fork();
+	    workers.push(worker);
+	    //console.log(worker);
+	  }
+
+	  cluster.on('exit', function (worker) {
+	    // Replace the dead worker,
+	    // we're not sentimental
+	    console.log('Worker ' + worker.id + ' died :(');
+	    workers.forEach (function (entry) {
+	      if (entry.id == worker.id) {
+	        var index = workers.indexOf(worker);
+	        if (index > -1) {
+	          workers.splice(index, 1);
+	        }
+	      }
+	    });
+	    new_worker = cluster.fork();	    
+	    workers.push(new_worker);
+	  });
+} else {
+	var Sequelize = require('sequelize');
+	var auth_db = new Sequelize(null,null,null,get_user_db());
+
+	var User = auth_db.import(__dirname + '/models/user.js')
+
+	// TODO - Check if the first time we run it on this host. If yes, he should get a peer ID from API peer master.
+	var Database_manager = require("./classes/databases_manager.js");
+	var dbs = new Database_manager();
+	
+	dbs.models.User = User;
+	dbs.add_database("auth_db",auth_db);
+	
+	var Service_manager = require("./classes/services_manager.js");
+	var sm = new Service_manager();
+	sm.set_db_manager(dbs);
+	console.log(sm);
+	sm.start();
+}
 
 /*
 var Peers_manager = require("./services/peers_manager.js");
@@ -24,27 +79,6 @@ function get_user_db() {
 	    dialect: 'sqlite'  
 	};
 }
-
-var Sequelize = require('sequelize');
-var auth_db = new Sequelize(null,null,null,get_user_db());
-
-var User = auth_db.import(__dirname + '/models/user.js')
-dbs.models.User = User;
-
-dbs.add_database("auth_db",auth_db);
-
-// Setup the node for the first time?
-var fs = require('fs'); 
-fs.exists('conf/peer.json', function(exists) { 
-  if (!exists) { 
-      // It not exist, this is the first run
-	  var Setup = require("./setup.js");
-	  console.log(Setup);
-	  console.log("passe");
-	  var setup = new Setup(dbs);
-	  setup.run();
-  } 
-}); 
 
 /*
 setTimeout(function () {
