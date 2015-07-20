@@ -11,6 +11,7 @@ Proxy_server.prototype = new Service();
 function Proxy_server() {
 	Service.apply(this);
 	this.config.port = 8080;
+	this.config.authorized_ip = [];
 	this.http_server = null;
 	this.one_per_peer = true;
 	this.proxy = httpProxy.createProxyServer({});
@@ -22,10 +23,38 @@ function Proxy_server() {
 	}).listen(9008);
 }
 
-Proxy_server.prototype.api_set = function(webrequest) {
-	if (typeof webrequest.query.port !== 'undefined') {
-		this.config.port = parseInt(webrequest.query.port);
+Proxy_server.prototype.api_add_ip = function(webrequest) {
+	if (typeof webrequest.query.ip !== 'undefined') {
+		this.config.authorized_ip.push(webrequest.query.ip);
+	} else {
+		webrequest.res.write(JSON.stringify({ success: false }));
+		webrequest.res.end();
+		return;
 	}
+
+	var self = this;
+	this.save(function () {
+		webrequest.res.write(JSON.stringify({ success: true }));
+		webrequest.res.end();
+	});
+}
+
+Proxy_server.prototype.verify_firewall = function(client_ip, callback) {
+	if (this.config.authorized_ip.length == 0) {
+		console.log("No authorized IP, we allow everything for the moment");
+		return callback(true);
+	}
+	
+	this.config.authorized_ip.forEach(function(entry) {
+		if (entry === client_ip)
+			return callback(true);
+	});
+	return callback(false);
+}
+
+Proxy_server.prototype.api_set = function(webrequest) {
+	if (typeof webrequest.query.port !== 'undefined')
+		this.config.port = parseInt(webrequest.query.port);
 
 	var self = this;
 	this.save(function () {
@@ -38,22 +67,43 @@ Proxy_server.prototype.api_set = function(webrequest) {
 }
 
 Proxy_server.prototype.proxy_request = function(req,res,callback) {
-	// TODO : Verify if we have access to this proxy
 	// TODO : Add HTTPS
+	var client_ip = '';
+	if (typeof req.headers['x-forwarded-for'] !== 'undefined') {
+	    var pieces = req.headers['x-forwarded-for'].split(/[\s,]+/);
+	    ip = pieces[0];
+	    client_ip = ip;
+	  } else if (typeof req.headers['x-forwarded-For'] !== 'undefined') {
+	    var pieces = req.headers['x-forwarded-For'].split(/[\s,]+/);
+	    ip = pieces[0];
+	    client_ip = ip;
+	  } else {
+		client_ip = req.connection.remoteAddress;
+	}
 	
-	var target = req.url;
-	console.log("Target: " + target);
-	this.proxy.web(req, res, {target: target}, function (e) {
-	       return callback();
+	var self = this;
+	
+	this.verify_firewall(client_ip, function (pass){
+		if (pass) {
+			var target = req.url;
+			console.log("Target: " + target);
+			self.proxy.web(req, res, {target: target}, function (e) {
+			       return callback();
+			});
+		} else {
+			res.writeHead(401);
+			res.end();
+			return callback();
+		}
 	});
 }
 
 Proxy_server.prototype.start = function(callback) {
 	var self = this;
 	
-	var route1 = new Route("*","GET","/api/proxy/" + self.service_id + "/set", function (webrequest) { self.api_set(webrequest); });
-	console.log(route1);
-	this.routes = [route1];
+	var route1 = new Route("*","GET","/api/proxy/" + self.service_id + "/set", function (webrequest) { self.api_set(webrequest); });	
+	var route2 = new Route("*","GET","/api/proxy/" + self.service_id + "/add_ip", function (webrequest) { self.api_add_ip(webrequest); });
+	this.routes = [route1,route2];
 
 	this.http_server = http.createServer(function(req, res) {		
 		self.proxy_request(req, res, function () {

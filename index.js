@@ -23,14 +23,10 @@ if (cluster.isMaster) {
 	  // Fork workers.
 	  if (process.env.dev == 1) {
 	    numCPUs = 1;
-	  } else {
-//	    if (numCPUs < 4)
-//	      numCPUs = 4;
 	  }
 	  for (var i = 0; i < numCPUs; i++) {
 	    worker = cluster.fork();
 	    workers.push(worker);
-	    //console.log(worker);
 	  }
 
 	  cluster.on('exit', function (worker) {
