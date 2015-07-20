@@ -24,6 +24,8 @@ function Proxy_server() {
 }
 
 Proxy_server.prototype.api_add_ip = function(webrequest) {
+	// TODO - All workers should reload with the new IP
+	
 	if (typeof webrequest.query.ip !== 'undefined') {
 		this.config.authorized_ip.push(webrequest.query.ip);
 	} else {
@@ -45,10 +47,17 @@ Proxy_server.prototype.verify_firewall = function(client_ip, callback) {
 		return callback(true);
 	}
 	
+	for (var i = 0, len = this.config.authorized_ip.length; i < len; i++) {
+		  if (this.config.authorized_ip[i] === client_ip)
+				return callback(true);
+	}
+	/*
 	this.config.authorized_ip.forEach(function(entry) {
+		console.log("compare " + entry  + " and " + client_ip);
 		if (entry === client_ip)
 			return callback(true);
 	});
+	*/
 	return callback(false);
 }
 
@@ -91,6 +100,7 @@ Proxy_server.prototype.proxy_request = function(req,res,callback) {
 			       return callback();
 			});
 		} else {
+			console.log("Proxy unauthorized");
 			res.writeHead(401);
 			res.end();
 			return callback();
