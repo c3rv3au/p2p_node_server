@@ -100,9 +100,9 @@ Proxy_server.prototype.proxy_request = function(req,res,callback) {
 			       return callback();
 			});
 		} else {
-			console.log("Proxy unauthorized");
+			//console.log("Proxy unauthorized from IP: " + client_ip);
 			res.writeHead(401);
-			res.end();
+			res.end("401 p2p_node_server unauthorized");
 			return callback();
 		}
 	});
